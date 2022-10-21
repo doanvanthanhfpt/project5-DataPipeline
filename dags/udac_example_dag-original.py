@@ -2,13 +2,9 @@ from datetime import datetime, timedelta
 import os
 from airflow import DAG
 from airflow.operators.dummy_operator import DummyOperator
-from airflow.hooks.postgres_hook import PostgresHook
-from airflow.operators.postgres_operator import PostgresOperator
-from airflow.operators.python_operator import PythonOperator
 from airflow.operators import (StageToRedshiftOperator, LoadFactOperator,
                                 LoadDimensionOperator, DataQualityOperator)
 from helpers import SqlQueries
-import create_tables
 
 # AWS_KEY = os.environ.get('AWS_KEY')
 # AWS_SECRET = os.environ.get('AWS_SECRET')
@@ -16,55 +12,24 @@ import create_tables
 default_args = {
     'owner': 'udacity',
     'start_date': datetime(2019, 1, 12),
-    'depends_on_past': False,
-    'retries': 3,
-    "retry_delay": timedelta(minutes=5),
-    'email_on_retry': False
 }
 
 dag = DAG('udac_example_dag',
             default_args=default_args,
             description='Load and transform data in Redshift with Airflow',
-            schedule_interval='0 * * * *',
-            catchup=False
+            schedule_interval='0 * * * *'
         )
 
-start_operator = DummyOperator(
-    task_id='Begin_execution',  
-    dag=dag
-)
-
-create_tables_operator = PostgresOperator(
-    task_id="create_tables",
-    dag=dag,
-    postgres_conn_id="redshift",
-    sql="create_tables.sql"
-)
+start_operator = DummyOperator(task_id='Begin_execution',  dag=dag)
 
 stage_events_to_redshift = StageToRedshiftOperator(
     task_id='Stage_events',
-    dag=dag,
-    table="staging_events",
-    region='us-west-2',
-    redshift_conn_id="redshift",
-    aws_credentials_id="aws_credentials",
-    dataset_format_copy='auto',
-    s3_bucket="s3://udacity-dend",
-    s3_key="log_data/{execution_date.year}/{execution_date.month}/",
-    provide_context=True
+    dag=dag
 )
 
 stage_songs_to_redshift = StageToRedshiftOperator(
     task_id='Stage_songs',
-    dag=dag,
-    table="staging_songs",
-    region='us-west-2',
-    redshift_conn_id="redshift",
-    aws_credentials_id="aws_credentials",
-    dataset_format_copy='auto',
-    s3_bucket="s3://udacity-dend",
-    s3_key="song_data",
-    provide_context=True
+    dag=dag
 )
 
 load_songplays_table = LoadFactOperator(
@@ -97,13 +62,4 @@ run_quality_checks = DataQualityOperator(
     dag=dag
 )
 
-end_operator = DummyOperator(
-    task_id='Stop_execution',  
-    dag=dag
-)
-
-start_operator >> create_tables_operator
-create_tables_operator >> stage_events_to_redshift
-create_tables_operator >> stage_songs_to_redshift
-
-
+end_operator = DummyOperator(task_id='Stop_execution',  dag=dag)
