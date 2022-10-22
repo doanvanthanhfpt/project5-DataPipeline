@@ -13,8 +13,7 @@ class StageToRedshiftOperator(BaseOperator):
         SECRET_ACCESS_KEY '{}'
         JSON '{}'
         REGION '{}'
-        IGNOREHEADER {}
-        DELIMITER '{}'
+        TIMEFORMAT AS 'epochmillisecs'
     """
 
     @apply_defaults
@@ -29,8 +28,9 @@ class StageToRedshiftOperator(BaseOperator):
         s3_key="",
         region="",
         dataset_format_copy="",
-        delimiter=",",
-        ignore_headers=1,
+        truncate=False,
+        #jsonlog_path="auto",
+        # ignore_headers=1,
         *args, **kwargs):
 
         super(StageToRedshiftOperator, self).__init__(*args, **kwargs)
@@ -43,8 +43,8 @@ class StageToRedshiftOperator(BaseOperator):
         self.s3_key = s3_key
         self.region = region
         self.dataset_format_copy = dataset_format_copy
-        self.delimiter = delimiter
-        self.ignore_headers = ignore_headers
+        self.truncate = truncate
+        # self.ignore_headers = ignore_headers
         self.aws_credentials_id = aws_credentials_id
 
     def execute(self, context):
@@ -70,8 +70,10 @@ class StageToRedshiftOperator(BaseOperator):
             credentials.access_key,
             credentials.secret_key,
             self.dataset_format_copy,
-            self.ignore_headers,
-            self.delimiter
+            self.region,
+            self.dataset_format_copy
+            # self.jsonlog_path
+            # self.ignore_headers,
         )
         redshift.run(formatted_sql)
 
