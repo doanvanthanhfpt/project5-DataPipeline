@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 import os
 
-from Project5-DataPipeline.dags.subdag import load_dim_table_to_redshift_dag
 from airflow import DAG
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.subdag_operator import SubDagOperator
@@ -11,7 +10,9 @@ from airflow.operators.python_operator import PythonOperator
 from airflow.operators import (StageToRedshiftOperator, LoadFactOperator,
                                 LoadDimensionOperator, DataQualityOperator)
 from helpers import SqlQueries
-# import create_tables
+
+from subdag import load_dim_table_to_redshift_dag
+
 
 # AWS_KEY = os.environ.get('AWS_KEY')
 # AWS_SECRET = os.environ.get('AWS_SECRET')
@@ -88,10 +89,10 @@ load_songplays_table = LoadFactOperator(
 load_userdimtable_taskid = 'load_userdimtable'
 load_userdimtable = SubDagOperator(
     subdag=load_dim_table_to_redshift_dag(
-        parent_dag_name=dag,
-        task_id=load_userdimtable_taskid,
-        redshift_conn_id="redshift",
+        dag,
+        load_userdimtable_taskid,
         aws_credentials_id="aws_credentials",
+        redshift_conn_id="redshift",
         table="public.users",
         load_dimtable_sql=SqlQueries.user_table_insert
     ),
