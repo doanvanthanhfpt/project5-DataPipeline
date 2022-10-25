@@ -1,12 +1,11 @@
 # DROP TABLES
-
-DROP TABLE IF EXISTS staging_events;
-DROP TABLE IF EXISTS staging_songs;
-DROP TABLE IF EXISTS songplays;
-DROP TABLE IF EXISTS users;
-DROP TABLE IF EXISTS songs;
-DROP TABLE IF EXISTS artists;
-DROP TABLE IF EXISTS "time";
+DROP TABLE IF EXISTS public.staging_events;
+DROP TABLE IF EXISTS public.staging_songs;
+DROP TABLE IF EXISTS public.songplays;
+DROP TABLE IF EXISTS public.users;
+DROP TABLE IF EXISTS public.songs;
+DROP TABLE IF EXISTS public.artists;
+DROP TABLE IF EXISTS public."time";
 
 CREATE TABLE public.artists (
 	artistid varchar(256) NOT NULL,

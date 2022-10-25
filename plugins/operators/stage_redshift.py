@@ -13,8 +13,6 @@ class StageToRedshiftOperator(BaseOperator):
         SECRET_ACCESS_KEY '{}'
         JSON '{}'
         REGION '{}'
-        IGNOREHEADER {}
-        DELIMITER '{}'
     """
 
     @apply_defaults
@@ -27,26 +25,22 @@ class StageToRedshiftOperator(BaseOperator):
         table="",
         s3_bucket="",
         s3_key="",
-        region="",
         dataset_format_copy="",
-        delimiter=",",
-        ignore_headers=1,
+        region="",
         *args, **kwargs):
 
         super(StageToRedshiftOperator, self).__init__(*args, **kwargs)
         # Map params here
         # Example:
         # self.conn_id = conn_id
-        self.table = table
         self.redshift_conn_id = redshift_conn_id
+        self.aws_credentials_id = aws_credentials_id
+        self.table = table
         self.s3_bucket = s3_bucket
         self.s3_key = s3_key
         self.region = region
         self.dataset_format_copy = dataset_format_copy
-        self.delimiter = delimiter
-        self.ignore_headers = ignore_headers
-        self.aws_credentials_id = aws_credentials_id
-
+        
     def execute(self, context):
         #self.log.info('StageToRedshiftOperator not implemented yet')
         
@@ -70,8 +64,7 @@ class StageToRedshiftOperator(BaseOperator):
             credentials.access_key,
             credentials.secret_key,
             self.dataset_format_copy,
-            self.ignore_headers,
-            self.delimiter
+            self.region
         )
         redshift.run(formatted_sql)
 

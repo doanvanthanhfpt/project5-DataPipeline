@@ -13,7 +13,6 @@ from helpers import SqlQueries
 
 from subdag import load_dim_table_to_redshift_dag
 
-
 # AWS_KEY = os.environ.get('AWS_KEY')
 # AWS_SECRET = os.environ.get('AWS_SECRET')
 
@@ -49,38 +48,35 @@ create_tables_operator = PostgresOperator(
 stage_events_to_redshift = StageToRedshiftOperator(
     task_id='Stage_events',
     dag=dag,
-    table="staging_events",
-    region="us-west-2",
     redshift_conn_id="redshift",
     aws_credentials_id="aws_credentials",
-    dataset_format_copy='auto',
+    table="staging_events",
     s3_bucket="udacity-dend",
-    # s3_key="log_data/{execution_date.year}/{execution_date.month}/",
     s3_key="log_data",
+    region="us-west-2",
+    dataset_format_copy="",
     jsonlog_path="s3://udacity-dend/log_json_path.json",
-    inputdata_format="JSON",
     provide_context=True
 )
 
 stage_songs_to_redshift = StageToRedshiftOperator(
     task_id='Stage_songs',
     dag=dag,
-    table="staging_songs",
-    region='us-west-2',
-    redshift_conn_id="redshift",
     aws_credentials_id="aws_credentials",
-    dataset_format_copy='auto',
+    redshift_conn_id="redshift",
+    table="staging_songs",
     s3_bucket="udacity-dend",
     s3_key="song_data",
-    inputdata_format="JSON",
-    ignore_headers="0",
+    region='us-west-2',
+    dataset_format_copy="",
     provide_context=True
 )
 
 load_songplays_table = LoadFactOperator(
     task_id='Load_songplays_fact_table',
     dag=dag,
-    redshift_conn_id="redshift",    
+    aws_credentials_id="aws_credentials",
+    redshift_conn_id="redshift",
     table="songplays",
     table_columns="(playid, start_time, userid, level, songid, artistid, sessionid, location, user_agent)",
     sql_select=SqlQueries.songplay_table_insert
