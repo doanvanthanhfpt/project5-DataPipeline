@@ -1,3 +1,4 @@
+from argparse import Action
 from datetime import datetime, timedelta
 import os
 
@@ -77,16 +78,17 @@ load_songplays_table = LoadFactOperator(
     dag=dag,
     aws_credentials_id="aws_credentials",
     redshift_conn_id="redshift",
-    table="songplays",
-    table_columns="(playid, start_time, userid, level, songid, artistid, sessionid, location, user_agent)",
-    sql_select=SqlQueries.songplay_table_insert
+    table="public.songplays",
+    action="append",
+    # table_columns="(playid, start_time, userid, level, songid, artistid, sessionid, location, user_agent)",
+    load_fact_sql=SqlQueries.songplay_table_insert
 )
 
 load_userdimtable_taskid = 'load_userdimtable'
 load_userdimtable = SubDagOperator(
     subdag=load_dim_table_to_redshift_dag(
-        dag,
-        load_userdimtable_taskid,
+        task_id="load_userdimtable_taskid",
+        dag=dag,
         aws_credentials_id="aws_credentials",
         redshift_conn_id="redshift",
         table="public.users",
