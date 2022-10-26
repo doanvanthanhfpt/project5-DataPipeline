@@ -13,7 +13,7 @@ def load_dim_table_to_redshift_dag(
         redshift_conn_id,
         aws_credentials_id,
         table,
-        load_dimtable_sql,
+        load_dim_sql,
         *args, **kwargs):
     
     dag = DAG(
@@ -27,7 +27,7 @@ def load_dim_table_to_redshift_dag(
         table=table,
         aws_credentials_id=aws_credentials_id,
         redshift_conn_id=redshift_conn_id,
-        load_dimtable_sql=load_dimtable_sql
+        load_dim_sql=load_dim_sql
     )
 
     load_dim_table_task
