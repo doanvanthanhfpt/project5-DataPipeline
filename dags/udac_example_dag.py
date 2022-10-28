@@ -87,16 +87,17 @@ load_songplays_table = LoadFactOperator(
 load_userdimtable_taskid = 'load_userdimtable'
 load_userdimtable = SubDagOperator(
     subdag=load_dim_table_to_redshift_dag(
-        task_id="load_userdimtable_taskid",
-        dag=dag,
-        aws_credentials_id="aws_credentials",
-        redshift_conn_id="redshift",
-        table="public.users",
-        load_dimtable_sql=SqlQueries.user_table_insert
+        "udac_example_dag",
+        "Load_user_dim_table",
+        "redshift",
+        "aws_credentials",
+        "public.users",
+        SqlQueries.user_table_insert
     ),
-    task_id='load_userdimtable_taskid',
-    dag=dag
-    
+    task_id='Load_user_dim_table',
+    dag=dag,
+    start_date=start_date,
+    action="truncate"
 )
 
 load_song_dimension_table = LoadDimensionOperator(
@@ -124,6 +125,13 @@ end_operator = DummyOperator(
     dag=dag
 )
 
-start_operator >> create_tables_operator
-create_tables_operator >> [stage_events_to_redshift, stage_songs_to_redshift]
-[stage_events_to_redshift, stage_songs_to_redshift] >> load_songplays_table
+start_operator  >>  create_tables_operator \
+                >>  [stage_events_to_redshift, \
+                     stage_songs_to_redshift] \
+                >>  load_songplays_table \
+                >>  [load_user_dimension_table, \
+                     load_song_dimension_table, \
+                     load_artist_dimension_table, \
+                     load_time_dimension_table] \
+                >>  run_quality_checks \
+                >>  end_operator

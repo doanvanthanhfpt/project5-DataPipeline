@@ -43,3 +43,5 @@ class DataQualityOperator(BaseOperator):
             check_table_sql = f"SELECT Count(*) FROM {table} where {field} IS NULL"
             rows = redshift.get_first(check_table_sql) 
             self.log.info(f'Field: "{field}" in table: {table} has {rows} NULL rows')
+
+            self.log.info(f'INFO: Data quality verification finished')
