@@ -30,18 +30,18 @@ class DataQualityOperator(BaseOperator):
 
         redshift = PostgresHook(postgres_conn_id=self.redshift_conn_id)
         
-        for tbl in range(len(self.all_tables)):
-            table = list(self.all_tables.keys())[tbl][0]
-            field = list(self.all_tables.values())[tbl][1]
+        for target_table in range(len(self.all_tables)):
+            checking_table = list(self.all_tables.keys())[target_table][0]
+            checking_field = list(self.all_tables.values())[target_table][1]
             
-            # Check tables - have rows
-            check_table_sql = f"SELECT Count(*) FROM {table}"
-            rows = redshift.get_first(check_table_sql) 
-            self.log.info(f'Table: {table} has {rows} rows')
+            # Check by count number of rows of all table
+            check_table_sql = f"SELECT Count(*) FROM {checking_table}"
+            number_rows = redshift.get_first(check_table_sql)
+            self.log.info(f'Table quality check: Table name: {checking_table} - Number of rows: {number_rows}')
             
-            # Check fields with null entries
-            check_table_sql = f"SELECT Count(*) FROM {table} where {field} IS NULL"
-            rows = redshift.get_first(check_table_sql) 
-            self.log.info(f'Field: "{field}" in table: {table} has {rows} NULL rows')
+            # Check by count number of NULL rows of fields
+            check_table_sql = f"SELECT Count(*) FROM {checking_table} where {checking_field} IS NULL"
+            number_rows = redshift.get_first(check_table_sql) 
+            self.log.info(f'Field quality check: "Field name: {checking_field}" in table name: {checking_table} - Number of NULL rows in filed: {number_rows}')
 
             self.log.info(f'INFO: Data quality verification finished')

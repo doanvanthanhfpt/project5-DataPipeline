@@ -4,7 +4,6 @@ import os
 
 from airflow import DAG
 from airflow.operators.dummy_operator import DummyOperator
-from airflow.operators.subdag_operator import SubDagOperator
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow.operators.postgres_operator import PostgresOperator
 from airflow.operators.python_operator import PythonOperator
@@ -12,7 +11,8 @@ from airflow.operators import (StageToRedshiftOperator, LoadFactOperator,
                                 LoadDimensionOperator, DataQualityOperator)
 from helpers import SqlQueries
 
-from subdag import load_dim_table_to_redshift_dag
+# from subdag import load_dim_table_to_redshift_dag
+# from airflow.operators.subdag_operator import SubDagOperator
 
 # AWS_KEY = os.environ.get('AWS_KEY')
 # AWS_SECRET = os.environ.get('AWS_SECRET')
@@ -84,40 +84,57 @@ load_songplays_table = LoadFactOperator(
     load_fact_sql=SqlQueries.songplay_table_insert
 )
 
-load_userdimtable_taskid = 'load_userdimtable'
-load_userdimtable = SubDagOperator(
-    subdag=load_dim_table_to_redshift_dag(
-        "udac_example_dag",
-        "Load_user_dim_table",
-        "redshift",
-        "aws_credentials",
-        "public.users",
-        SqlQueries.user_table_insert
-    ),
+load_user_dimension_table = LoadDimensionOperator(
     task_id='Load_user_dim_table',
     dag=dag,
-    start_date=start_date,
-    action="truncate"
+    aws_credentials_id="aws_credentials",
+    redshift_conn_id="redshift",
+    table = 'public.users',
+    action = 'truncate',
+    sql=SqlQueries.user_table_insert
 )
 
 load_song_dimension_table = LoadDimensionOperator(
     task_id='Load_song_dim_table',
-    dag=dag
+    dag=dag,
+    aws_credentials_id="aws_credentials",
+    redshift_conn_id="redshift",
+    table = 'public.songs',
+    action = 'truncate',
+    sql=SqlQueries.song_table_insert
 )
 
 load_artist_dimension_table = LoadDimensionOperator(
     task_id='Load_artist_dim_table',
-    dag=dag
+    dag=dag,
+    aws_credentials_id="aws_credentials",
+    redshift_conn_id="redshift",
+    table = 'public.artists',
+    action = 'truncate',
+    sql=SqlQueries.artist_table_insert
 )
 
 load_time_dimension_table = LoadDimensionOperator(
     task_id='Load_time_dim_table',
-    dag=dag
+    dag=dag,
+    aws_credentials_id="aws_credentials",
+    redshift_conn_id="redshift",
+    table = 'public.time',
+    action = 'truncate',
+    sql=SqlQueries.time_table_insert
 )
 
 run_quality_checks = DataQualityOperator(
     task_id='Run_data_quality_checks',
-    dag=dag
+    dag=dag,
+    aws_credentials_id="aws_credentials",
+    redshift_conn_id="redshift",
+    all_tables = {'table_field':['public.songplays', 'playid'], \
+                    'table_field':['public.users', 'userid'],\
+                    'table_field':['public.songs', 'songid'],\
+                    'table_field':['public.artists', 'artistid'],\
+                    'table_field':['public.time', 'start_time']\
+    }
 )
 
 end_operator = DummyOperator(
@@ -127,11 +144,11 @@ end_operator = DummyOperator(
 
 start_operator  >>  create_tables_operator \
                 >>  [stage_events_to_redshift, \
-                     stage_songs_to_redshift] \
+                        stage_songs_to_redshift] \
                 >>  load_songplays_table \
                 >>  [load_user_dimension_table, \
-                     load_song_dimension_table, \
-                     load_artist_dimension_table, \
-                     load_time_dimension_table] \
+                        load_song_dimension_table, \
+                        load_artist_dimension_table, \
+                        load_time_dimension_table] \
                 >>  run_quality_checks \
                 >>  end_operator
