@@ -29,7 +29,7 @@ class DataQualityOperator(BaseOperator):
         self.log.info('Starting DataQualityOperator implementation')
 
         redshift = PostgresHook(postgres_conn_id=self.redshift_conn_id)
-        
+
         for target_table in range(len(self.all_tables)):
             checking_field = list(self.all_tables.values())[target_table][1]
             checking_table = list(self.all_tables.keys())[target_table][1]

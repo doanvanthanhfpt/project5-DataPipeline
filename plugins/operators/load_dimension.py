@@ -38,7 +38,7 @@ class LoadDimensionOperator(BaseOperator):
             redshift.run("TRUNCATE TABLE {}".format(self.table))
 
         self.log.info("Inserting data from StagingTables into DimTables")
-        insert_table_sql = "INSERT INTO {} {}".format(self.table, self.insert_table_sql)
+        insert_table_sql = "INSERT INTO {} {}".format(self.table, self.load_dim_sql)
         redshift.run(insert_table_sql)
 
         self.log.info("Done: Inserting data on {}, {} loaded.".format(self.table))
