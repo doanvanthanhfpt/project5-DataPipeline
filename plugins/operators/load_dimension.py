@@ -8,14 +8,10 @@ class LoadDimensionOperator(BaseOperator):
 
     @apply_defaults
     def __init__(self,
-                # Define your operators params (with defaults) here
-                # Example:
-                # conn_id = your-connection-name
-                redshift_conn_id="",
-                aws_credentials_id="",
-                table="",
-                action="append",
-                load_dim_sql="",
+                table = '',
+                redshift_conn_id = '',
+                sql = '',
+                action = 'append',
                 *args, **kwargs):
 
         super(LoadDimensionOperator, self).__init__(*args, **kwargs)
@@ -23,10 +19,10 @@ class LoadDimensionOperator(BaseOperator):
         # Example:
         # self.conn_id = conn_id
         self.redshift_conn_id = redshift_conn_id,
-        self.aws_credentials_id = aws_credentials_id,
+        # self.aws_credentials_id = aws_credentials_id,
         self.table = table,
         self.action = action,
-        self.load_dim_sql = load_dim_sql,
+        self.sql = sql,
 
     def execute(self, context):
         # self.log.info('LoadDimensionOperator not implemented yet')
@@ -38,7 +34,7 @@ class LoadDimensionOperator(BaseOperator):
             redshift.run("TRUNCATE TABLE {}".format(self.table))
 
         self.log.info("Inserting data from StagingTables into DimTables")
-        insert_table_sql = "INSERT INTO {} {}".format(self.table, self.load_dim_sql)
-        redshift.run(insert_table_sql)
+        insert_dim_table_sql = "INSERT INTO {} {}".format(self.table, self.sql)
+        redshift.run(insert_dim_table_sql)
 
         self.log.info("Done: Inserting data on {}, {} loaded.".format(self.table))
