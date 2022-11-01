@@ -12,20 +12,11 @@ from airflow.operators import (StageToRedshiftOperator, LoadFactOperator,
                                 LoadDimensionOperator, DataQualityOperator)
 from helpers import SqlQueries
 
-# AWS_KEY = os.environ.get('AWS_KEY')
-# AWS_SECRET = os.environ.get('AWS_SECRET')
-
 config = configparser.ConfigParser()
 config.read('pl.cfg')
 
-# os.environ["AWS_ACCESS_KEY_ID"]= config['AWS']['AWS_ACCESS_KEY_ID']
-# os.environ["AWS_SECRET_ACCESS_KEY"]= config['AWS']['AWS_SECRET_ACCESS_KEY']
-
-# AWS_ACCESS_KEY_ID= config['AWS']['AWS_ACCESS_KEY_ID']
-# AWS_SECRET_ACCESS_KEY = config['AWS']['AWS_SECRET_ACCESS_KEY']
-
-AWS_ACCESS_KEY_ID = 'AKIAVZUHRFHMUVIZ32DN'
-AWS_SECRET_ACCESS_KEY = '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'
+AWS_ACCESS_KEY_ID = 'aws_access_key'
+AWS_SECRET_ACCESS_KEY = 'aws_secret_key'
 
 default_args = {
     'owner': 'udacity',
