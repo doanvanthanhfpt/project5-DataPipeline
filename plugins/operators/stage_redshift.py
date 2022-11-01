@@ -17,12 +17,11 @@ class StageToRedshiftOperator(BaseOperator):
 
     @apply_defaults
     def __init__(self,
-        # Define your operators params (with defaults) here
-        # Example:
-        # redshift_conn_id=your-connection-name
         redshift_conn_id="",
-        aws_credentials_id="",
+        aws_access_key_id = "",
+        aws_secret_access_key = "",
         table="",
+        jsonlog_path="",
         s3_bucket="",
         s3_key="",
         dataset_format_copy="",
@@ -30,22 +29,19 @@ class StageToRedshiftOperator(BaseOperator):
         *args, **kwargs):
 
         super(StageToRedshiftOperator, self).__init__(*args, **kwargs)
-        # Map params here
-        # Example:
-        # self.conn_id = conn_id
         self.redshift_conn_id = redshift_conn_id
-        self.aws_credentials_id = aws_credentials_id
+        self.aws_access_key_id = aws_access_key_id
+        self.aws_secret_access_key = aws_secret_access_key
         self.table = table
+        self.jsonlog_path = jsonlog_path
         self.s3_bucket = s3_bucket
         self.s3_key = s3_key
-        self.region = region
         self.dataset_format_copy = dataset_format_copy
+        self.region = region
         
     def execute(self, context):
-        #self.log.info('StageToRedshiftOperator not implemented yet')
-        
-        aws_hook = AwsHook(self.aws_credentials_id)
-        credentials = aws_hook.get_credentials()
+        # self.log.info('StageToRedshiftOperator not implemented yet')
+        self.log.info('StageToRedshiftOperator starting')
         redshift = PostgresHook(postgres_conn_id=self.redshift_conn_id)
 
         self.log.info('Clearing data from destination Redshift table')
@@ -55,14 +51,21 @@ class StageToRedshiftOperator(BaseOperator):
         Copying data from Udacity's S3 to Staging Redshift table
         """
         self.log.info("Copying data from S3 to Staging Redshift")
-        rendered_key = self.s3_key.format(**context)
-        s3_path = "s3://{}/{}".format(self.s3_bucket, rendered_key)
-        # s3_path rendered output path like this "s3://udacity-dend/log_data/2019/10/*.json"
+        if self.table == 'staging_events':
+            rendered_key = self.s3_key.format(**context)
+            s3_path = "s3://{}/{}".format(self.s3_bucket, rendered_key)
+            # s3_path = "s3://{}/{}/".format(self.s3_bucket, self.s3_key)
+            # s3_path for staging_events rendered output path like this "s3://udacity-dend/log_data/2019/10/*.json"
+
+        if self.table == 'staging_songs':
+            s3_path = "s3://{}/".format(self.s3_bucket)
+            # s3_path for staging_songs rendered output path like this "s3://udacity-dend/song_data/*.json"
+
         formatted_sql = StageToRedshiftOperator.copy_sql.format(
             self.table,
             s3_path,
-            credentials.access_key,
-            credentials.secret_key,
+            self.aws_access_key_id,
+            self.aws_secret_access_key,
             self.dataset_format_copy,
             self.region
         )
