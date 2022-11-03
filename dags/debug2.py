@@ -20,7 +20,8 @@ AWS_SECRET_ACCESS_KEY = config['AWS']['AWS_SECRET_ACCESS_KEY']
 
 default_args = {
     'owner': 'udacity',
-    'start_date': datetime(2018, 11, 1),
+    'start_date': datetime(2019, 11, 1),
+    # 'start_date': datetime(2018, 11, 1),
     'depends_on_past': False,
     'catchup' : False,
     'retries': 3,
