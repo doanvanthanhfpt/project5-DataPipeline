@@ -54,7 +54,7 @@ stage_events_to_redshift = StageToRedshiftOperator(
     s3_key = "log_data/{execution_date.year}/{execution_date.month}",
     region="us-west-2",
     dataset_format_copy="JSON",
-    jsonlog_path="log_data/log_json_path.json",
+    jsonlog_path="log_json_path.json",
     provide_context=True
 )
 

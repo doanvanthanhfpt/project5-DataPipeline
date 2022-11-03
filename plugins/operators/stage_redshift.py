@@ -65,7 +65,7 @@ class StageToRedshiftOperator(BaseOperator):
             s3_path,
             self.aws_access_key_id,
             self.aws_secret_access_key,
-            self.dataset_format_copy,
+            self.jsonlog_path,
             self.region
         )
         redshift.run(formatted_sql)
