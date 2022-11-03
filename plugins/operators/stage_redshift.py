@@ -9,8 +9,8 @@ class StageToRedshiftOperator(BaseOperator):
     copy_sql = """
         COPY {}
         FROM '{}'
-        ACCESS_KEY_ID '{}'
-        SECRET_ACCESS_KEY '{}'
+        ACCESS_KEY_ID {}
+        SECRET_ACCESS_KEY {}
         JSON '{}'
         REGION '{}'
     """
@@ -56,8 +56,9 @@ class StageToRedshiftOperator(BaseOperator):
             # s3_path for staging_events rendered output path shoud be like this "s3://udacity-dend/log_data/2019/10/*.json"
 
         if self.table == 'staging_songs':
-            s3_path = "s3://{}/".format(self.s3_bucket)
-            # s3_path for staging_songs rendered output path shoud be like this "s3://udacity-dend/song_data/*.json"
+            rendered_key = self.s3_key
+            s3_path = "s3://{}/".format(self.s3_bucket,rendered_key)
+            # s3_path for staging_songs rendered output path like this "s3://udacity-dend/song_data/*.json"
 
         formatted_sql = StageToRedshiftOperator.copy_sql.format(
             self.table,

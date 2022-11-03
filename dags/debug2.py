@@ -13,15 +13,14 @@ from airflow.operators import (StageToRedshiftOperator, LoadFactOperator,
 from helpers import SqlQueries
 
 config = configparser.ConfigParser()
-config.read('pl.cfg')
+config.read('/home/workspace/airflow/dags/pl.cfg')
 
-AWS_ACCESS_KEY_ID = 'aws_access_key'
-AWS_SECRET_ACCESS_KEY = 'aws_secret_key'
+AWS_ACCESS_KEY_ID = config['AWS']['AWS_ACCESS_KEY_ID']
+AWS_SECRET_ACCESS_KEY = config['AWS']['AWS_SECRET_ACCESS_KEY']
 
 default_args = {
     'owner': 'udacity',
-    'start_date': datetime(2019, 1, 12),
-    'end_date': datetime(2019, 2, 12),
+    'start_date': datetime(2018, 11, 1),
     'depends_on_past': False,
     'catchup' : False,
     'retries': 3,
@@ -32,8 +31,12 @@ default_args = {
 dag = DAG('udac_example_dag',
             default_args=default_args,
             description='Load and transform data in Redshift with Airflow',
-            schedule_interval='0 * * * *'
+            schedule_interval='0 * * * *',
+            concurrency=4, 
+            max_active_runs=2
         )
+# Limit number of active and concurrently across all active runs
+# dag = DAG('example2', concurrency=10, max_active_runs=2)
 
 start_operator = DummyOperator(
     task_id='Begin_execution',  
@@ -48,10 +51,10 @@ stage_events_to_redshift = StageToRedshiftOperator(
     redshift_conn_id="redshift",
     table="staging_events",
     s3_bucket="udacity-dend",
-    s3_key = "log_data/{execution.year}/{execution.month}",
+    s3_key = "log_data/{execution_date.year}/{execution_date.month}",
     region="us-west-2",
     dataset_format_copy="JSON",
-    jsonlog_path="log_data/log_json_path.json", # s3_json mapped
+    jsonlog_path="log_data/log_json_path.json",
     provide_context=True
 )
 
