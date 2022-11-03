@@ -52,8 +52,10 @@ class StageToRedshiftOperator(BaseOperator):
         """
         self.log.info("Copying data from S3 to Staging Redshift")
         if self.table == 'staging_events':
-            s3_path = "s3://{}/{}/".format(self.s3_bucket, self.s3_key)
+            rendered_key = self.s3_key.format(**context)
+            s3_path = "s3://{}/{}/".format(self.s3_bucket, rendered_key)
             # s3_path for staging_events rendered output path shoud be like this "s3://udacity-dend/log_data/2019/10/*.json"
+            s3_key = "log_data/{execution_date.year}/{execution_date.month}"
 
         if self.table == 'staging_songs':
             rendered_key = self.s3_key
