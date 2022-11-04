@@ -12,7 +12,8 @@ class LoadFactOperator(BaseOperator):
                 # Example:
                 # conn_id = your-connection-name
                 redshift_conn_id="",
-                aws_credentials_id="",
+                aws_access_key_id = "",
+                aws_secret_access_key = "",
                 table="",
                 action="append",
                 load_fact_sql="",
@@ -23,7 +24,8 @@ class LoadFactOperator(BaseOperator):
         # Example:
         # self.conn_id = conn_id
         self.redshift_conn_id = redshift_conn_id
-        self.aws_credentials_id = aws_credentials_id
+        self.aws_access_key_id = aws_access_key_id
+        self.aws_secret_access_key = aws_secret_access_key
         self.table = table
         self.action = action
         self.load_fact_sql = load_fact_sql
@@ -37,8 +39,8 @@ class LoadFactOperator(BaseOperator):
             self.log.info("Truncating table {}".format(self.table))
             redshift.run("TRUNCATE TABLE {}".format(self.table))
 
-        self.log.info("Inserting data from StagingTable into FactTable")
+        self.log.info("Loading data from StagingTable into FactTable")
         insert_table_sql = "INSERT INTO {} {}".format(self.table, self.load_fact_sql)
         redshift.run(insert_table_sql)
 
-        self.log.info("Done: Inserting data on {} loaded.".format(self.table))
+        self.log.info("Done: Data on {} loaded.".format(self.table))

@@ -12,7 +12,8 @@ class DataQualityOperator(BaseOperator):
                 # Example:
                 # conn_id = your-connection-name
                 redshift_conn_id="",
-                aws_credentials_id="",
+                aws_access_key_id = "",
+                aws_secret_access_key = "",
                 all_tables="",
                 *args, **kwargs):
 
@@ -20,9 +21,10 @@ class DataQualityOperator(BaseOperator):
         # Map params here
         # Example:
         # self.conn_id = conn_id
-        self.redshift_conn_id = redshift_conn_id,
-        self.aws_credentials_id = aws_credentials_id,
-        self.all_tables = all_tables,
+        self.redshift_conn_id = redshift_conn_id
+        self.aws_access_key_id = aws_access_key_id
+        self.aws_secret_access_key = aws_secret_access_key
+        self.all_tables = all_tables
 
     def execute(self, context):
         # self.log.info('DataQualityOperator not implemented yet')
@@ -32,16 +34,16 @@ class DataQualityOperator(BaseOperator):
 
         for target_table in range(len(self.all_tables)):
             checking_field = list(self.all_tables.values())[target_table][1]
-            checking_table = list(self.all_tables.keys())[target_table][1]
+            checking_table = list(self.all_tables.keys())[target_table][0]
             
             # Check by count number of NULL rows of fields
-            count_null_rows_sql = f"SELECT Count(*) FROM {checking_table} where {checking_field} IS NULL"
-            number_rows = redshift.get_first(count_null_rows_sql) 
-            self.log.info(f'Field quality check: "Field name: {checking_field}" in table name: {checking_table} - Number of NULL rows in filed: {number_rows}')
+            count_null_rows_sql = f"SELECT COUNT(*) FROM {checking_table} WHERE {checking_field} IS NULL"
+            # number_rows = redshift.get_first(count_null_rows_sql)
+            self.log.info(f'Field quality check: "Field name: {checking_field}" in table name: {checking_table} - Number of NULL rows in filed: {count_null_rows_sql}')
 
             # Check by count number of rows of all table
-            count_table_rows_sql = f"SELECT Count(*) FROM {checking_table}"
-            number_rows = redshift.get_first(count_table_rows_sql)
-            self.log.info(f'Table quality check: Table name: {checking_table} - Number of rows: {number_rows}')
+            count_table_rows_sql = f"SELECT COUNT(*) FROM {checking_table}"
+            # number_rows = redshift.get_first(count_table_rows_sql)
+            self.log.info(f'Table quality check: Table name: {checking_table} - Number of table rows: {count_table_rows_sql}')
 
-            self.log.info(f'INFO: Data quality verification finished')
+            self.log.info(f'DONE: Data quality verification finished')
