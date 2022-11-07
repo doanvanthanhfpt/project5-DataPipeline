@@ -1,13 +1,8 @@
-from argparse import Action
 from datetime import datetime, timedelta
-import os
 import configparser
 
 from airflow import DAG
 from airflow.operators.dummy_operator import DummyOperator
-from airflow.hooks.postgres_hook import PostgresHook
-from airflow.operators.postgres_operator import PostgresOperator
-from airflow.operators.python_operator import PythonOperator
 from airflow.operators import (StageToRedshiftOperator, LoadFactOperator,
                                 LoadDimensionOperator, DataQualityOperator)
 from helpers import SqlQueries
@@ -19,7 +14,7 @@ AWS_ACCESS_KEY_ID = config['AWS']['AWS_ACCESS_KEY_ID']
 AWS_SECRET_ACCESS_KEY = config['AWS']['AWS_SECRET_ACCESS_KEY']
 
 default_args = {
-    'owner': 'udacity',
+    'owner': 'Doan_Van_Thanh',
     'start_date': datetime(2018, 11, 1),
     'end_date': datetime(2018, 11, 30),
     'provide_context': True,
@@ -30,15 +25,13 @@ default_args = {
     'email_on_retry': False
 }
 
-dag = DAG('udac_example_dag',
+dag = DAG('Doan_Van_Thanh',
             default_args=default_args,
             description='Load and transform data in Redshift with Airflow',
             schedule_interval='0 * * * *',
-            concurrency=4, 
-            max_active_runs=2
+            concurrency=4, # Limit number of concurrently
+            max_active_runs=2 # Limit number of active
         )
-# Limit number of active and concurrently across all active runs
-# dag = DAG('example2', concurrency=10, max_active_runs=2)
 
 start_operator = DummyOperator(
     task_id='Begin_execution',
@@ -80,8 +73,7 @@ load_songplays_table = LoadFactOperator(
     dag=dag,
     redshift_conn_id="redshift",
     table="public.songplays",
-    action="append",
-    # table_columns="(playid, start_time, userid, level, songid, artistid, sessionid, location, user_agent)",
+    append_only = True,
     load_fact_sql=SqlQueries.songplay_table_insert
 )
 
@@ -127,12 +119,8 @@ run_quality_checks = DataQualityOperator(
     redshift_conn_id="redshift",
     aws_access_key_id = AWS_ACCESS_KEY_ID,
     aws_secret_access_key = AWS_SECRET_ACCESS_KEY,
-    all_tables = {'table_field':['public.songplays', 'playid'], \
-                    'table_field':['public.users', 'userid'],\
-                    'table_field':['public.songs', 'songid'],\
-                    'table_field':['public.artists', 'artistid'],\
-                    'table_field':['public.time', 'start_time']\
-    }
+    all_tables = ["staging_events", "staging_songs", "songplays", "users", "songs", "artists", "time"]
+    # tables_fields = ["playid", "userid", "songid", "artistid", "start_time"]
 )
 
 end_operator = DummyOperator(
